@@ -5,12 +5,11 @@
     <body>
 
         <input type="button" value="Entrar Sala">
-        <input type="button" value="Criar Sala" onclick="CriarSala()">
+        <input type="text" name="roomName" id="roomName" placeholder="Digite o nome da sala">
+        <input type="text" name="playerName" id="playerName" placeholder="Digite o nome do Jogador">
+        <input type="submit" value="CriarSala" onclick="criarSala()">
 
         <script src="/socket.io/socket.io.js"></script>
-        <script>
-            const socket = io();
-        </script>
+        <script src="/index.js"></script>
     </body>
-
 </html>

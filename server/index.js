@@ -18,10 +18,33 @@ app.set('view engine', 'ejs');
 
 app.use("/", router);
 
+/*
 io.on('connection', (socket) => {
   console.log('a user connected');
   socket.join("room 1");
   console.log(socket.rooms);
+
+  socket.on("disconnect", () => {
+    console.log(io.sockets.adapter.rooms.keys());
+  });
+});
+*/
+
+const rooms = new Set();
+
+//Ricardo: depois, mudar o set de String para set de objetos Room
+io.on('connection', (socket) => {
+  socket.on("createRoom", (roomName, playerName) => {
+    if(rooms.has(roomName)){
+      io.emit("createRoom", false);
+      return;
+    };
+
+    rooms.add(roomName);
+    socket.join(roomName);
+
+    io.emit("createRoom", true);
+  });
 
   socket.on("disconnect", () => {
     console.log(io.sockets.adapter.rooms.keys());
