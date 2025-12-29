@@ -1,4 +1,3 @@
-const Rooms = require('../models/Room');
 const io = require('socket.io');
 const socketServices = require('../services/socketServices');
 

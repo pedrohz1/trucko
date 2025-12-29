@@ -1,24 +1,16 @@
 const axios = require('axios');
 const io = require('socket.io')();
-const Rooms = require('../models/Room');
 
-exports.createRoom = async (roomName) => {
-    Rooms.create({ name: roomName });
-    socket.join(roomName);
+exports.createRoom = async (room) => {
+    socket.join(room);
 }
 
-exports.deleteRoom = async (roomName) => {
-    if(Rooms.findOne({ name: roomName }) == null) return;    
-
-    Rooms.deleteOne({ name: roomName });
-    io.socketsLeave(roomName);
+exports.deleteRoom = async (room) => {
+    io.socketsLeave(room);
 }
 
-exports.joinRoom = async (roomName) => {
-    if(Rooms.findOne({ name: roomName }) == null) throw new Error('Sala não existe');
-    
-    Rooms.findOneAndUpdate({ name: roomName }, {players: Rooms.players + 1});
-    socket.join(roomName);
+exports.joinRoom = async (room) => {
+    if(room.size > 1) return new Error;
 }
 
 exports.disconnect = async (room) => {

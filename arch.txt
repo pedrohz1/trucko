@@ -1,0 +1,48 @@
+padrão -> MVC 
+
+
+
+model -> class user[id, nome, jogo] ; jogo [id, users], cartas [idJogo, carta]
+
+model/repo -> comprarcarta(IdJogo), descartarCarta(), iniciarJogo()
+                                |
+                                |    
+                                |
+model/view(services) -> validar, criar objeto, ele chama a implementação de repo (socket)
+
+
+
+controller -> ter a rota
+
+//repo
+constructor jogoRepository: IJogoRepository(interface) 
+
+
+//service
+validação
+
+const carta = this.jogoRepository.comprarcarta(idJogo)
+
+return carta
+
+
+//controller
+router.get('/comprarCarta/:idJogo'){
+    const reposnse = service.comprarCarta(idJogo)
+    return reposnse
+}
+
+
+
+export class JogoRepository implements IJogoRepository{
+
+
+}
+
+
+type UserValidation  ={
+    id: string,
+    name: string
+} 
+
+const validated = UserValidation.parse(request)
