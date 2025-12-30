@@ -1,14 +1,12 @@
-export class Player {
+export class Player { 
+    
+    #hand = [];
+
     constructor(name) {
         this.name = name;
-        this._hand = [];
     }
 
-    get hand() {
-        return this._hand;
-    }
-    
-    set hand(cards) {
-        this._hand = cards;
+    drawHand(cards) {
+        this.#hand = cards;
     }
 }
