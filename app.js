@@ -7,13 +7,13 @@ const dotenv = require('dotenv').config();
 const app = express();
 const server = createServer(app);
 const io = new Server(server);
-const router = require('./routes/gameRouter');
+const router = require('./server/routes/gameRouter');
 
-app.use(express.static(path.join(__dirname, '../client/public')))
+app.use(express.static(path.join(__dirname, './client/public')))
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.set('views', path.join(__dirname, '../client/views'));
+app.set('views', path.join(__dirname, './client/views'));
 app.set('view engine', 'ejs');
 
 app.use("/", router);

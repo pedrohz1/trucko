@@ -4,14 +4,18 @@ export class PlayerRepository {
     }
 
     addPlayer(player) {
-        this.players.push(player.name);
+        this.players.push(player);
     }
 
-    removePlayer(player) {
-        const index = this.players.indexOf(player.name);
+    removePlayer(name) {
+        const index = this.players.indexOf(name);
         if(index > -1) {
             this.players.splice(index);
         }
+    }
+
+    getPlayer(name) {
+        return this.players.find((player) => player.name == name);
     }
 
     getPlayerId(player) {

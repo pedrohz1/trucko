@@ -1,7 +1,21 @@
 export class Team {
-    constructor(players){
-        score = 0;
+    
+    #roundScore = 0;
+    #matchScore = 0;
 
-        this.players = players;
+    constructor(){
+        this.players = [];
+    }
+
+    addPlayer(player) {
+        this.players.push(player);
+    }
+
+    addRoundScore(score) {
+        this.#roundScore += score;
+    }
+
+    addMatchScore(score) {
+        this.#matchScore += score;
     }
 }
