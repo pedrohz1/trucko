@@ -8,6 +8,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server);
 const router = require('./server/routes/gameRouter');
+const { Room } = require('./server/models/Room.mjs');
 
 app.use(express.static(path.join(__dirname, './client/public')))
 app.use(express.urlencoded({ extended: true }));
@@ -18,32 +19,47 @@ app.set('view engine', 'ejs');
 
 app.use("/", router);
 
-/*
+const rooms = new Map();
+
 io.on('connection', (socket) => {
-  console.log('a user connected');
-  socket.join("room 1");
-  console.log(socket.rooms);
 
-  socket.on("disconnect", () => {
-    console.log(io.sockets.adapter.rooms.keys());
-  });
-});
-*/
+  socket.on("roomsList", () => {
+    const lista = [];
 
-const rooms = new Set();
+    rooms.forEach((objectRoom, roomName) => {
+      lista.push([roomName, roomName.numPlayers])
+    })
 
-//Ricardo: depois, mudar o set de String para set de objetos Room
-io.on('connection', (socket) => {
+    io.emit("roomList", lista);
+  })
+
   socket.on("createRoom", (roomName, playerName) => {
     if(rooms.has(roomName)){
       io.emit("createRoom", false);
       return;
     };
 
-    rooms.add(roomName);
+    rooms.set(roomName, new Room(roomName, playerName, 2));
     socket.join(roomName);
 
-    io.emit("createRoom", true);
+    console.log(rooms.get(roomName))
+
+    socket.emit("createRoom", true);
+  });
+
+
+  socket.on("joinRoom", (roomName, playerName) => {
+    if(!rooms.has(roomName)){
+      socket.emit("joinRoom", false);
+      return;
+    };
+
+    socket.join(roomName);
+    rooms.get(roomName).addPlayer(playerName);
+
+    socket.emit("joinRoom", true);
+
+    console.log(`${playerName} entrou em ${rooms.get(roomName)}`);
   });
 
   socket.on("disconnect", () => {

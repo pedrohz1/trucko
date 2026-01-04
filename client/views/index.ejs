@@ -1,13 +1,22 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <%- include('partials/header') %>
+<link rel="stylesheet" href="/style.css">
 
     <body>
+        <div style="display: flex; flex-direction: column;">
+            <div style="display: flex; flex-direction: column;">
+                <input type="text" name="playerName" id="playerName" placeholder="Digite o nome do Jogador">
+                <input type="text" name="roomName" id="roomName" placeholder="Digite o nome da sala">
+            </div>
+            <div>
+                <input type="submit" value="CriarSala" onclick="criarSala()">
+                <input type="button" value="Entrar Sala" onclick="entrarSala()">
+            </div>
+        </div>
 
-        <input type="button" value="Entrar Sala">
-        <input type="text" name="roomName" id="roomName" placeholder="Digite o nome da sala">
-        <input type="text" name="playerName" id="playerName" placeholder="Digite o nome do Jogador">
-        <input type="submit" value="CriarSala" onclick="criarSala()">
+        <table id="roomsList">
+        </table>
 
         <script src="/socket.io/socket.io.js"></script>
         <script src="/index.js"></script>
