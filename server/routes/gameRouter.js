@@ -8,4 +8,4 @@ Router.get('/truco', (req, res) => {
   res.render('truco');
 });
 
-module.exports = Router;
+module.exports = { Router };

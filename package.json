@@ -2,7 +2,7 @@
     "name": "socketChat",
     "version": "0.0.1",
     "description": "my first socket.io app",
-    "type": "commonjs",
+    "type": "module",
     "dependencies": {
         "axios": "^1.13.2",
         "dotenv": "^17.2.3",

@@ -1,14 +1,17 @@
-const express = require('express');
-const path = require('path');
-const { createServer } = require('node:http');
-const { Server } = require('socket.io');
-const dotenv = require('dotenv').config();
+import express from 'express';
+import path from 'path'
+import { createServer } from 'node:http'
+import { Server } from 'socket.io'
+
+import dotenv from 'dotenv'
+const dotEnv = config();
 
 const app = express();
 const server = createServer(app);
 const io = new Server(server);
-const router = require('./server/routes/gameRouter');
-const { Room } = require('./server/models/Room.mjs');
+import Router from './server/routes/gameRouter.js';
+
+import { Game } from "./server/models/Game.js"
 
 app.use(express.static(path.join(__dirname, './client/public')))
 app.use(express.urlencoded({ extended: true }));
@@ -59,7 +62,7 @@ io.on('connection', (socket) => {
 
     socket.emit("joinRoom", true);
 
-    console.log(`${playerName} entrou em ${rooms.get(roomName)}`);
+    console.log(`${playerName} entrou em ${JSON.stringify(rooms.get(roomName))}`);
   });
 
   socket.on("disconnect", () => {
