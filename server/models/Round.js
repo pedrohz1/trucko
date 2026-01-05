@@ -10,12 +10,13 @@ export class Round {
         this.playedCount = 0;
         this.teamsChallenged = [];
         this.lastChallenge = 0;
+        this.tieValue = null;
     }
 
     cardPlayed(player, card, maxPlayers) {
+        this.playedCount++;
         this.setBiggestCard(player, card);
 
-        this.playedCount++;
         if (this.playedCount === maxPlayers) {
             return this.nextTurn();
         }
@@ -50,26 +51,31 @@ export class Round {
         if (this.roundValue == 1) this.roundValue = 3;
     }
 
-    setBiggestCard(card, player) {
+    setBiggestCard(player, card) {
+        const cardPower = Deck.cardOrder[card.code];
 
-        if (this.biggestCard != null) {
-            if (Deck.cardOrder[card.code] === Deck.cardOrder[this.biggestCard.card]) {
-                this.biggestCard = null;
-            }
-
-            if (Deck.cardOrder[card.code] > Deck.cardOrder[this.biggestCard.card]) {
-                this.biggestCard = {
-                    player: player,
-                    card: card.code
-                };
-            }
+        if (this.playedCount === 0) {
+            this.biggestCard = { player, card: card.code };
+            this.tieValue = 0;
+            return;
         }
 
         if (this.biggestCard === null) {
-            this.biggestCard = {
-                player: player,
-                card: card.code
+            if (cardPower > this.tieValue) {
+                this.biggestCard = { player, card: card.code };
+                this.tieValue = 0;
             }
+            return;
+        }
+
+        const currentPower = Deck.cardOrder[this.biggestCard.card];
+
+        if (cardPower === currentPower) {
+            this.tieValue = currentPower;
+            this.biggestCard = null;
+        } else if (cardPower > currentPower) {
+            this.biggestCard = { player, card: card.code };
+            this.tieValue = 0;
         }
     }
 

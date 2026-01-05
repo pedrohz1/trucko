@@ -10,3 +10,23 @@ export const RESPONSES = {
     ACCEPT: 'ACCEPT',
     RUN: 'RUN'
 }
+
+export class GameResponse {
+    static success(state, data = null) {
+        return {
+            success: true,
+            state: state,
+            message: null,
+            data: data
+        };
+    }
+
+    static error(state, message) {
+        return {
+            success: false,
+            state: state,
+            message: message,
+            data: null
+        };
+    }
+}

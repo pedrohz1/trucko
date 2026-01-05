@@ -1,5 +1,5 @@
 import { Round } from "./Round.js";
-import { STATES, RESPONSES } from "../constants/gameConstants.js"
+import { STATES, RESPONSES, GameResponse } from "../constants/gameConstants.js";
 
 export class Game {
     constructor(roomName, player, numMaxPlayers) {
@@ -19,7 +19,6 @@ export class Game {
         this.scoreTeam1 = 0;
         this.scoreTeam2 = 0;
     }
-
 
     addPlayer(player) {
         if (this.numMaxPlayers == this.numPlayers) throw new Error("Capacidade máxima da sala atingida");
@@ -50,8 +49,6 @@ export class Game {
         this.players.set(currentID, player2);
     }
 
-    //---
-
     async startRound() {
         this.state = STATES.PLAYING;
         this.round = new Round();
@@ -68,45 +65,73 @@ export class Game {
             const result = this.round.cardPlayed(player, card, this.numMaxPlayers);
             if (result.end) {
                 this.addPoints(result.winnerTeam);
-                if (this.state != STATES.GAME_OVER) this.startRound();
+                if (this.state !== STATES.GAME_OVER) this.startRound();
+                return GameResponse.success(this.state, { winner: result.winnerTeam });
             }
 
-            return {
-                success: true,
-                state: this.state
-            };
+            return GameResponse.success(this.state);
         }
 
-        return {
-            success: false,
-            reason: "Você não pode jogar agora!",
-            state: this.state
-        }
+        return GameResponse.error(this.state, "Você não pode jogar agora!");
     }
 
     challenge(player) {
         if (this.state === STATES.PLAYING && this.round.playing === player.id) {
             const result = this.round.challenge(player);
-            if(result.success) {
+            if (result.success) {
                 this.state = STATES.WAITING_FOR_TRUCO;
-                return {
-                    success: result.success,
-                    state: this.state
-                }
+                return GameResponse.success(this.state);
             }
+            return GameResponse.error(this.state, result.reason);
         }
 
-        return {
-            success: false,
-            reason: "Voce não pode trucar agora!",
-            state: this.state
-        }
+        return GameResponse.error(this.state, "Você não pode trucar agora!");
     }
 
     challengeResponse(player, response) {
-        if(response == RESPONSES.INCREASE) {
-            this.round.lastChallenge = player.team;
-            
+        if (this.state === STATES.WAITING_FOR_TRUCO && this.round.lastChallenge !== player.team) {
+
+            if (response === RESPONSES.INCREASE) {
+                this.round.lastChallenge = player.team;
+                this.round.increaseRoundValue();
+                return GameResponse.success(this.state);
+            }
+
+            if (response === RESPONSES.ACCEPT) {
+                this.state = STATES.PLAYING;
+                return GameResponse.success(this.state);
+            }
+
+            if (response === RESPONSES.FOLD) {
+                // Se o time corre, o time adversário ganha o valor ATUAL do round (antes do aumento)
+                const winnerTeam = player.team === 1 ? 2 : 1;
+                this.addPoints(winnerTeam);
+                if (this.state !== STATES.GAME_OVER) this.startRound();
+                return GameResponse.success(this.state, { winner: winnerTeam });
+            }
+        }
+
+        return GameResponse.error(this.state, "Resposta de desafio inválida.");
+    }
+
+    addPoints(team) {
+        if (team === 0) return;
+        if (team === 1) this.scoreTeam1 += this.round.roundValue;
+        if (team === 2) this.scoreTeam2 += this.round.roundValue;
+
+        if (this.scoreTeam1 >= 12 || this.scoreTeam2 >= 12) this.state = STATES.GAME_OVER;
+    }
+
+    challengeResponse(player, response) {
+        if (this.state === STATES.WAITING_FOR_TRUCO && this.round.lastChallenge != player.team) {
+            if (response == RESPONSES.INCREASE) {
+                this.round.lastChallenge = player.team;
+                this.round.increaseRoundValue();
+                return {
+                    success: true,
+                    state: this.state
+                }
+            }
         }
     }
 
