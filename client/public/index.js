@@ -69,3 +69,7 @@ socket.on("roomList", (rooms) => {
     console.log("a: " + text);
     roomTable.innerHTML = text;
 });
+
+function startGame(){
+    socket.emit("startGame");
+}

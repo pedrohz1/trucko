@@ -8,17 +8,39 @@ export class Round {
         this.playing = 1;
         this.winners = [];
         this.playedCount = 0;
+        this.teamsChallenged = [];
+        this.lastChallenge = 0;
     }
 
-    cardPlayed(card, player) {
-        this.setBiggestCard(card, player);
+    cardPlayed(player, card, maxPlayers) {
+        this.setBiggestCard(player, card);
 
         this.playedCount++;
-        if(this.playedCount === 4) {
-            return this.nextTurn(this.biggestCard.player.team);
+        if (this.playedCount === maxPlayers) {
+            return this.nextTurn();
         }
 
-        this.playing = (this.playing % 4) + 1;       
+        this.playing = (this.playing % maxPlayers) + 1;
+        return {
+            end: false
+        };
+    }
+
+    challenge(player) {
+        if (this.teamsChallenged.includes(player.team)) {
+            return {
+                success: false,
+                reason: "Seu time já trucou!"
+            }
+        }
+
+        this.increaseRoundValue();
+        this.teamsChallenged.push(player.team);
+        this.lastChallenge = player.team;
+        return {
+            success: true,
+            reason: null
+        }
     }
 
     increaseRoundValue() {
@@ -29,9 +51,9 @@ export class Round {
     }
 
     setBiggestCard(card, player) {
-        
+
         if (this.biggestCard != null) {
-            if(Deck.cardOrder[card.code] === Deck.cardOrder[this.biggestCard.card]) {
+            if (Deck.cardOrder[card.code] === Deck.cardOrder[this.biggestCard.card]) {
                 this.biggestCard = null;
             }
 
@@ -51,21 +73,37 @@ export class Round {
         }
     }
 
-    nextTurn(roundWinner) {
-        if(this.winners.includes(roundWinner)) {
+    nextTurn() {
+        this.playedCount = 0
+
+        if (this.biggestCard === null) {
+            if (this.winners.length > 0 && this.winners[0] != 0) {
+                return {
+                    end: true,
+                    winnerTeam: this.winners[0]
+                }
+            }
+
+            this.winners.push(0);
+            this.playing = (this.playing % 4) + 1;
+
+            return {
+                end: false
+            }
+        }
+
+
+        if (this.winners.includes(this.biggestCard.player.team) || this.winners[0] === 0) {
             return {
                 end: true,
-                winnerTeam: roundWinner
+                winnerTeam: this.biggestCard.player.team
             };
         }
-        
-        this.winners.push(roundWinner);
 
-        if(this.biggestCard != null) {
-            this.playing = this.biggestCard.player;
-        }
-        else {
-            this.playing = (this.playing % 4) + 1; 
+        this.winners.push(this.biggestCard.player.team);
+
+        if (this.biggestCard != null) {
+            this.playing = this.biggestCard.player.id;
         }
 
         this.biggestCard = null;

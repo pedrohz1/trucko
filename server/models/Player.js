@@ -1,19 +1,26 @@
 export class Player { 
     
-    constructor(name) {
+    constructor(name, socketID, host) {
         this.name = name;
         this.hand = [];
         this.id = null;
         this.team = null;
+        this.socketID = socketID;
+        this.host = host;
     }
 
     
-    setId(id) {
+    setID(id) {
         this.id = id;
     }
     
-    setTeam(team) {
-        this.team = team;
+    setTeam() {
+        if(this.id % 2 != 0) {
+            this.team = 1;
+            return;
+        }
+
+        this.team = 2;
     }
 
     setHand(cards) {

@@ -1,11 +1,13 @@
-const Router = require('express').Router();
+import { Router } from "express";
+const router = Router();
 
-Router.get('/', (req, res) => {
+
+router.get('/', (req, res) => {
   res.render('index');
 });
 
-Router.get('/truco', (req, res) => {
+router.get('/truco', (req, res) => {
   res.render('truco');
 });
 
-module.exports = { Router };
+export { router };

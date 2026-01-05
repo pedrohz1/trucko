@@ -1,0 +1,12 @@
+export const STATES = {
+    LOBBY: 'LOBBY',
+    PLAYING: 'PLAYING',
+    WAITING_FOR_TRUCO: 'WAITING_FOR_TRUCO',
+    GAME_OVER: 'GAME_OVER'
+}
+
+export const RESPONSES = {
+    INCREASE: 'INCREASE',
+    ACCEPT: 'ACCEPT',
+    RUN: 'RUN'
+}

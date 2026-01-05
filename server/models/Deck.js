@@ -1,3 +1,6 @@
+import axios from "axios";
+import { resolveInclude } from "ejs";
+
 export class Deck {
 
     static cardOrder = {
@@ -48,21 +51,23 @@ export class Deck {
         this.remaining = 0;
     }
 
+
     async startDeck() {
         const response = await axios.get("https://deckofcardsapi.com/api/deck/new/shuffle/?cards=4C,7D,AS,7H,3C,3D,3S,3H,2C,2D,2S,2H,AC,AD,AH,KC,KD,KS,KH,JC,JD,JS,JH,QC,QD,QS,QH,7C,7S,6C,6D,6S,6H,5C,5D,5S,5H,4D,4S,4H");
 
-        if (!response.success) {
+        console.log(response.data);
+        if (!response.data.success) {
             throw new Error("Falha na API ao gerar o deck");
         }
 
-        this.id = response.deck_id;
-        this.remaining = response.remaining;
+        this.id = response.data.deck_id;
+        this.remaining = response.data.remaining;
     }
 
-    async drawHand(deckId, count) {
-        const response = await axios.get(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=${count}`);
-        if (!cards.success) throw new Error("Falha na API ao comprar a mão");
+    async drawHand(count) {
+        const response = await axios.get(`https://deckofcardsapi.com/api/deck/${this.id}/draw/?count=${count}`);
+        if (!response.data.success) throw new Error("Falha na API ao comprar a mão");
 
-        return response.cards;
+        return response.data.cards;
     }
 }
