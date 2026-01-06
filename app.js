@@ -9,10 +9,10 @@ const server = createServer(app);
 const io = new Server(server);
 
 import { router } from './server/routes/gameRouter.js';
-import { roomServices } from './server/services/roomServices.js';
+import { roomController } from './server/controllers/roomController.js';
 
 import url from 'url';
-import { gameServices } from './server/services/gameServices.js';
+import { gameController } from './server/controllers/gameController.js';
 
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,8 +28,8 @@ app.set('view engine', 'ejs');
 app.use("/", router);
 
 const rooms = new Map();
-roomServices(io, rooms);
-gameServices(io, rooms);
+roomController(io, rooms);
+gameController(io, rooms);
 
 server.listen(3000, () => {
   console.log('server running at http://localhost:3000');

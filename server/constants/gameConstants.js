@@ -8,7 +8,7 @@ export const STATES = {
 export const RESPONSES = {
     INCREASE: 'INCREASE',
     ACCEPT: 'ACCEPT',
-    RUN: 'RUN'
+    FOLD: 'FOLD'
 }
 
 export class GameResponse {

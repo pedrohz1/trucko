@@ -1,1 +1,18 @@
-createRoom
+Client -> Server {
+    createRoom (roomName, playerName)
+    joinRoom (roomName, playerName)
+    startGame (roomName)
+
+    playCard (player, card)
+}
+
+Server -> Client{
+
+}
+
+socket.data{
+    socket.data.roomName = roomName;
+    socket.data.host = true;
+    socekt.data.team =
+}
+

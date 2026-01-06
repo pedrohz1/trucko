@@ -1,29 +1,25 @@
-const GameService = require("../models/services/GameService");
-const PlayerRepository = require("../models/repo/PlayerRepository");
-const { Game } = require('../models/Game');
-const { Team } = require('../models/Team')
+export function gameController(io, rooms) {
+    io.on("connection", (socket) => {
 
+        socket.on("playCard", (card) => {
+            const room = socket.data.roomName;
+            const game = rooms.get(room);
 
-exports.createGame = (req, res) => {
-    const team1 = new Team();
-    const team2 = new Team();
-    
-    const newGame = new Game(team1, team2);
-}
+            if (!game) return socket.emit("actionError", "Jogo não existe!");
 
-exports.joinTeam = (req, res) => {
-    
-}
+            const player = game.getPlayer(socket.id);
 
-exports.playCard = (req, res) => {
-    const player = PlayerRepository.getPlayer(req.body.player);
-    const card = req.body.card;
+            if (!player) return socket.emit("actionError", "Player não encontrado!");
 
-    try {
-        const turnResult = GameService.playCard(player, card);
+            const response = game.playCard(player, card);
 
-        return turnResult.playedCard;
-    } catch (err) {
-        alert(err);
-    }
+            if (!response.success) return socket.emit("actionError", response.message);
+
+            if (response.data) {
+                if (response.data.winner) {
+                    return io.to(room).emit("endGame", response.data.winner.winnerTeam);
+                }
+            }
+        })
+    })
 }

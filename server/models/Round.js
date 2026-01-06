@@ -1,16 +1,19 @@
 import { Deck } from "./Deck.js";
 
 export class Round {
-    constructor() {
-        this.roundValue = 1;
+    constructor(dealerIndex) {
         this.deck = new Deck();
-        this.biggestCard = null;
-        this.playing = 1;
-        this.winners = [];
+
+        this.playing = dealerIndex;
         this.playedCount = 0;
-        this.teamsChallenged = [];
+
+        this.winners = [];
+        this.biggestCard = null;
+        this.tieValue = 0;
+
+        this.roundValue = 1;
         this.lastChallenge = 0;
-        this.tieValue = null;
+        this.teamsChallenged = [];
     }
 
     cardPlayed(player, card, maxPlayers) {
@@ -45,10 +48,22 @@ export class Round {
     }
 
     increaseRoundValue() {
-        if (this.roundValue == 9) this.roundValue = 12;
-        if (this.roundValue == 6) this.roundValue = 9;
-        if (this.roundValue == 3) this.roundValue = 6;
-        if (this.roundValue == 1) this.roundValue = 3;
+        switch (this.roundValue) {
+            case 1:
+                this.roundValue = 3;
+                break;
+            case 3:
+                this.roundValue = 6;
+                break;
+            case 6:
+                this.roundValue = 9;
+                break;
+            case 9:
+                this.roundValue = 12;
+                break;
+            default:
+                break;
+        }
     }
 
     setBiggestCard(player, card) {

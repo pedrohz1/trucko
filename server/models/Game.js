@@ -9,12 +9,14 @@ export class Game {
         player.setTeam();
 
         this.players = new Map();
+        this.playersWithoutTeam = new Map()
         this.players.set(1, player);
         this.numPlayers = 1;
         this.numMaxPlayers = numMaxPlayers;
 
         this.state = STATES.LOBBY;
         this.round = null;
+        this.dealerIndex = 1;
 
         this.scoreTeam1 = 0;
         this.scoreTeam2 = 0;
@@ -25,15 +27,42 @@ export class Game {
         if (this.players.has(player)) throw new Error("Usuário já existente na sala");
 
         this.numPlayers++;
+        this.playersWithoutTeam.set(player.name, player);
+
+        /*
         this.players.set(this.numPlayers, player);
 
         player.setID(this.numPlayers);
         player.setTeam();
+        */
     }
 
-    removePlayer(playerId) {
-        this.players.delete(playerId);
+    removePlayer(playerID) {
+        this.players.delete(playerID);
         this.numPlayers--;
+    }
+
+    getPlayer(socketID) {
+        for (let player of this.players.values()) {
+            if (player.socketID === socketID) {
+                return player;
+            }
+        }
+    }
+
+    joinTeam(player, ID) {
+        if(this.player.has(ID)) throw new Error("Posição já ocupada");
+        if(!this.playersWithoutTeam.has(player.name)) throw new Error ("Usuario já tem um time");
+
+        this.players.set(ID, this.playersWithoutTeam.get(player.name));
+        this.playersWithoutTeam.delete(playerName);
+    }
+
+    exitTeam(player) {
+        if(this.playersWithoutTeam.has(player.name)) throw new Error("Usuário sem time");
+
+        this.playersWithoutTeam.set(player.name, player);
+        this.players.delete(player.id);
     }
 
     changeTeam(currentID, newID) {
@@ -51,7 +80,7 @@ export class Game {
 
     async startRound() {
         this.state = STATES.PLAYING;
-        this.round = new Round();
+        this.round = new Round(this.dealerIndex);
         await this.round.deck.startDeck();
 
         await Promise.all(Array.from(this.players.values()).map(async (player) => {
@@ -69,7 +98,7 @@ export class Game {
                 return GameResponse.success(this.state, { winner: result.winnerTeam });
             }
 
-            return GameResponse.success(this.state);
+            return GameResponse.success(this.state, { lastPlayedCard: card, biggestCard: this.round.biggestCard.card });
         }
 
         return GameResponse.error(this.state, "Você não pode jogar agora!");
@@ -103,7 +132,6 @@ export class Game {
             }
 
             if (response === RESPONSES.FOLD) {
-                // Se o time corre, o time adversário ganha o valor ATUAL do round (antes do aumento)
                 const winnerTeam = player.team === 1 ? 2 : 1;
                 this.addPoints(winnerTeam);
                 if (this.state !== STATES.GAME_OVER) this.startRound();
@@ -115,27 +143,7 @@ export class Game {
     }
 
     addPoints(team) {
-        if (team === 0) return;
-        if (team === 1) this.scoreTeam1 += this.round.roundValue;
-        if (team === 2) this.scoreTeam2 += this.round.roundValue;
-
-        if (this.scoreTeam1 >= 12 || this.scoreTeam2 >= 12) this.state = STATES.GAME_OVER;
-    }
-
-    challengeResponse(player, response) {
-        if (this.state === STATES.WAITING_FOR_TRUCO && this.round.lastChallenge != player.team) {
-            if (response == RESPONSES.INCREASE) {
-                this.round.lastChallenge = player.team;
-                this.round.increaseRoundValue();
-                return {
-                    success: true,
-                    state: this.state
-                }
-            }
-        }
-    }
-
-    addPoints(team) {
+        this.dealerIndex = (this.dealerIndex % this.numMaxPlayers) + 1;
         if (team == 0) return;
         if (team == 1) this.scoreTeam1 += this.round.roundValue;
         if (team == 2) this.scoreTeam2 += this.round.roundValue;
