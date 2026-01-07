@@ -1,4 +1,5 @@
 Client -> Server {
+    roomList ()
     createRoom (roomName, playerName)
     joinRoom (roomName, playerName)
     startGame (roomName)

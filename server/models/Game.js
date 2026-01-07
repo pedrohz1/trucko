@@ -8,9 +8,13 @@ export class Game {
         player.setID(1);
         player.setTeam();
 
-        this.players = new Map();
-        this.playersWithoutTeam = new Map()
-        this.players.set(1, player);
+        this.players = new Map(); //ID => Player
+        this.playersWithoutTeam = new Map(); // playerName => Player
+        if(numMaxPlayers == 2){
+            this.players.set(1, player);
+        }else{
+            this.playersWithoutTeam.set(player.name, player);
+        }
         this.numPlayers = 1;
         this.numMaxPlayers = numMaxPlayers;
 
@@ -27,14 +31,16 @@ export class Game {
         if (this.players.has(player)) throw new Error("Usuário já existente na sala");
 
         this.numPlayers++;
-        this.playersWithoutTeam.set(player.name, player);
 
-        /*
-        this.players.set(this.numPlayers, player);
+        if(this.numMaxPlayers == 2){
+            this.players.set(this.numPlayers, player);
 
-        player.setID(this.numPlayers);
-        player.setTeam();
-        */
+            player.setID(this.numPlayers);
+            player.setTeam();
+
+        }else{
+            this.playersWithoutTeam.set(player.name, player);
+        }
     }
 
     removePlayer(playerID) {
@@ -56,6 +62,9 @@ export class Game {
 
         this.players.set(ID, this.playersWithoutTeam.get(player.name));
         this.playersWithoutTeam.delete(playerName);
+
+        player.setID(ID);
+        player.setTeam();
     }
 
     exitTeam(player) {
@@ -63,6 +72,9 @@ export class Game {
 
         this.playersWithoutTeam.set(player.name, player);
         this.players.delete(player.id);
+
+        player.setID(null);
+        player.setTeam();
     }
 
     changeTeam(currentID, newID) {

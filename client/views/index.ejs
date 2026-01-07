@@ -3,7 +3,7 @@
 <%- include('partials/header') %>
 <link rel="stylesheet" href="/style.css">
 
-    <body>
+    <body onload="carregarMain()">
         <div style="display: flex; flex-direction: column;">
             <div style="display: flex; flex-direction: column;">
                 <input type="text" name="playerName" id="playerName" placeholder="Digite o nome do Jogador">
@@ -12,11 +12,18 @@
             <div>
                 <input type="button" value="CriarSala" onclick="criarSala()">
                 <input type="button" value="Entrar Sala" onclick="entrarSala()">
-                <input type="button" value="Começar Partida" onclick="startGame()">
+                <input type="button" value="Começar Partida" onclick="iniciarJogo()">
             </div>
         </div>
 
         <table id="roomsList">
+            <thead style="background-color: black; color: white;">
+                <tr>
+                    <th>Nome da sala</th>
+                    <th>jogadores</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
         </table>
 
         <script src="/socket.io/socket.io.js"></script>

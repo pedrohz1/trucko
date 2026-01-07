@@ -15,6 +15,10 @@ export class Player {
     }
     
     setTeam() {
+        if(this.id == null) {
+            this.team = null;
+            return;
+        }
         if(this.id % 2 != 0) {
             this.team = 1;
             return;

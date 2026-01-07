@@ -2,9 +2,30 @@ import { Game } from "../models/Game.js"
 import { Player } from "../models/Player.js"
 import { STATES } from "../constants/gameConstants.js";
 
+function transferOldToNewID(socket) {
+    
+}
+
+function getRooms (io, rooms){
+    const allRooms = [];
+    rooms.forEach(room => {
+            allRooms.push({
+                roomName: room.roomName,
+                numPlayers: room.numPlayers,
+                numMaxPlayers: room.numMaxPlayers
+        })
+    });
+
+    io.emit("roomList", allRooms);
+}
+
 export function roomController(io, rooms) {
 
     io.on('connection', (socket) => {
+
+        socket.on("roomList", () => {
+            getRooms(io, rooms);
+        })
 
         socket.on("createRoom", (roomName, playerName) => {
             if (rooms.has(roomName)) {
@@ -18,8 +39,8 @@ export function roomController(io, rooms) {
             
             socket.join(roomName);
 
-            console.log(rooms.get(roomName))
-            
+            console.log(rooms.get(roomName));
+
             socket.emit("createRoom", true);
         });
 
@@ -38,6 +59,7 @@ export function roomController(io, rooms) {
             socket.emit("joinRoom", true);
 
             console.log(`${playerName} entrou em ${JSON.stringify(rooms.get(roomName))}`);
+            console.log(rooms.get(roomName));
 
             const r = rooms.get(roomName);
             r.startRound().then(() => {
@@ -45,19 +67,26 @@ export function roomController(io, rooms) {
             })
         });
 
-        socket.on("joinTeam");
-        socket.on("exitTeam");
-        socket.on("exitRoom");
+        socket.on("exitRoom", (roomName) => {
+            
+        });
+        //socket.on("joinTeam");
+        //socket.on("exitTeam");
 
         //socket.on("changeTeam")
 
         socket.on("startGame", (roomName) => {
-            if(!socket.data.host && rooms.get(roomName).states != STATES.LOBBY){
-                console.log("erro ao começar");
+            const room = rooms.get(roomName);
+            if(!socket.data.host && room.states != STATES.LOBBY){
+                console.log("Partida nao esta em estado de lobby");
+                return;
+            }
+            if(!(room.players.size = room.numMaxPlayers)){
+                console.log("Nem todos estão em times");
                 return;
             }
 
-            if(rooms.get(socket.data.rooms))
+            //if(rooms.get(socket.data.rooms))
             console.log("partida iniciada");
             io.to(roomName).emit("startGame");
         });

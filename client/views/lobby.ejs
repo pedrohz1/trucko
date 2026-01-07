@@ -2,12 +2,18 @@
 <html lang="pt-br">
 <%- include('partials/header') %>
 <link rel="stylesheet" href="/style.css">
-    <body>
+    <body onload="carregarLobby()">
 
-        <input type="button" value="Começar partida" onclick="comecarPartida()">
-        <input type="button" value="Começar partida" onclick="sairSala()">
+        <div style="display: flex; flex-direction: column;">
+            <div style="display: flex; flex-direction: column;">
+            </div>
+            <div>
+                <input type="button" value="Sair da sala" onclick="sairSala()">  
+                <input type="button" value="Começar partida" onclick="comecarPartida()">
+            </div>
+        </div>
 
-        <script src="/socket.io/socket.io.js"></script>
+        
         <script src="/index.js"></script>
     </body>
 </html>

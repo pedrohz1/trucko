@@ -3,9 +3,10 @@ const socket = io();
 socket.emit("roomsList");
 
 function criarSala(){
+    
     const roomName = document.getElementById("roomName").value;
     const playerName = document.getElementById("playerName").value;
-
+    
     if(!roomName){
         alert("Digite o nome da sala para continuar");
         return;
@@ -14,6 +15,8 @@ function criarSala(){
         alert("Digite o nome do jogador para continuar");
         return;
     }
+    
+    window.location.href = 'lobby';
 
     socket.emit("createRoom", roomName, playerName);
 
@@ -53,23 +56,33 @@ function entrarSala(){
     });
 }
 
-socket.on("roomList", (rooms) => {
-    const roomTable = document.querySelector("#roomsList");
-    const text = `<tr>
-                    <th>Nome da sala</th>
-                    <th>jogadores</th>
-                 </tr>`;
+function carregarLobby(){
 
-    rooms.forEach(roomName, roomPlayers => {
-        text.concat(`<tr>
-                        <th>?{roomName}</th>
-                        <th>?{roomPlayer}/4</th>
-                    </tr>`);
+}
+
+function sairSala() {
+    window.location.href = '';
+}
+
+
+
+function carregarMain(){
+    socket.emit("roomList");
+}
+
+socket.on("roomList", (rooms) => {
+    const roomTable = document.querySelector("#roomsList tbody");
+    let text = ``;
+
+    rooms.forEach(room => {
+        text += `<tr>
+                    <th>${room.roomName}</th>
+                    <th>${room.numPlayers}/${room.numMaxPlayers}</th>
+                </tr>`;
     });
-    console.log("a: " + text);
     roomTable.innerHTML = text;
 });
 
-function startGame(){
+function iniciarJogo(){
     socket.emit("startGame");
 }
