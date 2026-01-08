@@ -31,12 +31,12 @@
         <div class="lobby">
             <div style="display: flex; flex-direction: column;">
                 <div style="display: flex; flex-direction: column;">
-                </div>
-                <div>
                     <input type="button" value="Entrar time 1" onclick="entrarTime(1)">
                     <input type="button" value="Entrar time 2" onclick="entrarTime(2)">
                     <input type="button" value="Entrar time 1" onclick="entrarTime(3)">
                     <input type="button" value="Entrar time 2" onclick="entrarTime(4)">
+                </div>
+                <div>
                     <input type="button" value="Começar partida" onclick="iniciarJogo()">
                     <input type="button" value="Sair da sala" onclick="sairSala()">
                 </div>
@@ -46,12 +46,15 @@
 
 
         <div class="game">
-            <input type="button" value="Começar partida" onclick="jogarCarta()">
+            <img src="" class="card" onclick="playCard(1)">
+            <img src="" class="card" onclick="playCard(2)">
+            <img src="" class="card" onclick="playCard(3)">
         </div>
 
     </body>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/index.js"></script>
-    </body>
+    <script src="/gameScript.js"></script>
+</body>
 
 </html>

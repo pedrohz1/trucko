@@ -1,9 +1,12 @@
 import { Game } from "../models/Game.js"
 import { Player } from "../models/Player.js"
 import { STATES } from "../constants/gameConstants.js";
+import { startRound } from "./gameController.js";
 
+
+//---Render Functions---//
 function getRooms(io, rooms) {
-    const allRooms = [];
+    let allRooms = [];
     rooms.forEach(room => {
         allRooms.push({
             roomName: room.roomName,
@@ -15,6 +18,13 @@ function getRooms(io, rooms) {
     io.emit("roomList", allRooms);
 }
 
+function getTeamMembers(io, room){
+    if(room.numMaxPlayers != 2){
+        io.to(room.name).emit("teamList", Array.from(room.playersWithoutTeam.values), room.players);
+    }
+}
+
+//---Main function---//
 export function roomController(io, rooms) {
 
     io.on('connection', (socket) => {
@@ -55,8 +65,6 @@ export function roomController(io, rooms) {
                 return;
             }
 
-            //if (rooms.get(roomName).players.get(1).id == socket.id || ) { } 
-
             socket.join(roomName);
             rooms.get(roomName).addPlayer(new Player(playerName, socket.id, false));
             socket.data.roomName = roomName;
@@ -71,44 +79,77 @@ export function roomController(io, rooms) {
             console.log(rooms.get(roomName));
 
             const r = rooms.get(roomName);
-            r.startRound().then(() => {
-                console.log(r.players);
-            })
         });
 
-        socket.on("exitRoom", (roomName) => {
-            if((rooms.get(roomName).players.size == 0 && rooms.get(roomName).playersWithoutTeam.size == 0) || socket.data.host){
+        socket.on("exitRoom", () => {
+            const room = rooms.get(socket.data.roomName);
+            if (!room) {
+                socket.emit("exitRoom", false, "Você não está em uma sala!");
+                return;
+            }
+
+            const response = room.removePlayer(socket.data.name, socket.data.id);
+
+            if ((room.players.size == 0 && room.playersWithoutTeam.size == 0) || socket.data.host) {
                 rooms.delete(roomName);
-                getRooms(io, rooms);
             }
-            
-            if(rooms.get(roomName).playersWithoutTeam.has(socket.data.name)){
-                rooms.get(roomName).playersWithoutTeam.delete(socket.data.name)
-                console.log(`player: ${socket.data.name} removido`);
 
-            }else if(rooms.get(roomName).players.has(socket.data.id)){
-                rooms.get(roomName).players.delete(socket.data.id)
-                console.log(`player: ${socket.data.name} removido`);
-
-            }else{
-                socket.emit("exitRoom", false, "Player não encontrado");
-            }
-            socket.emit("exitRoom", true, "");    
+            getRooms(io, rooms);
+            socket.emit("exitRoom", response.success, response.message);
         });
 
-        //socket.on("joinTeam");
-        //socket.on("exitTeam");
+
+        //---Team Functions---//
+        socket.on("joinTeam", (ID) => {
+            const room = rooms.get(socket.data.roomName);
+            if (!room) {
+                socket.emit("joinTeam", false, "Você não está em uma sala!");
+                return;
+            }
+            if (ID < 1 || ID > 4) {
+                socket.emit("joinTeam", false, "ID inválido");
+                return;
+            }
+            if (socket.data.id != null || socket.data.team != null) {
+                socket.emit("joinTeam", false, "Jogador já está em um time");
+                return;
+            }
+
+            console.log(ID);
+            try {
+                room.joinTeam(socket.data.name, ID);
+
+            }catch(e) {
+                socket.emit("joinTeam", false, e.message);
+                return;
+            }
+
+            getTeamMembers(io, room);
+            socket.emit("joinTeam", true, "");
+        });
+
+        socket.on("exitTeam", () => {
+            const room = rooms.get(socket.data.roomName);
+            if (!room) {
+                socket.emit("exitTeam", false, "Você não está em uma sala!");
+                return;
+            }
+        });
 
         //socket.on("changeTeam");
 
-        socket.on("startGame", (roomName) => {
-            const room = rooms.get(roomName);
-            if (!socket.data.host) {
-                socket.emit("startGame", false, "Partida nao esta em estado de lobby");
+        socket.on("startGame", async () => {
+            const room = rooms.get(socket.data.roomName);
+            if (!room) {
+                socket.emit("startGame", false, "Você não está em uma sala!");
                 return;
             }
-            if (room.states != STATES.LOBBY) {
-                socket.emit("startGame", false, "Partida");
+            if (!socket.data.host) {
+                socket.emit("startGame", false, "Usuario não é o host");
+                return;
+            }
+            if (room.state != STATES.LOBBY) {
+                socket.emit("startGame", false, "Partida não esta em estado de lobby");
                 return;
             }
             if (room.players.size === room.numMaxPlayers) {
@@ -117,13 +158,25 @@ export function roomController(io, rooms) {
             }
 
             //if(rooms.get(socket.data.rooms))
-            console.log("partida iniciada");
-            io.to(roomName).emit("startGame");
+            io.to(socket.data.roomName).emit("startGame", true);
+            await startRound(socket, io, rooms);
         });
 
         socket.on("disconnect", (reason) => {
-            //console.log(io.sockets.adapter.rooms.keys());
+            const room = rooms.get(socket.data.roomName);
             console.log(socket.id + " disconnected " + reason);
+            if (!room) {
+                return;
+            }
+
+            const response = room.removePlayer(socket.data.name, socket.data.id);
+
+            if ((room.players.size == 0 && room.playersWithoutTeam.size == 0) || socket.data.host) {
+                rooms.delete(roomName);
+            }
+
+            getRooms(io, rooms);
+            socket.emit("exitRoom", false, `disconectado por ${reason}`);
         });
     });
 }

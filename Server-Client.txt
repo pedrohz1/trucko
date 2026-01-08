@@ -16,10 +16,9 @@ Server -> Client{
 rooms (roomName => game)
 
 socket.data{
-    socket.data.roomName
-    socket.data.host
-    socket.data.id
-    socket.data.team
-    socekt.data.name
+    socket.data.roomName = nome da sala
+    socket.data.host = true / false
+    socket.data.id = null / 1 / 2 / 3 / 4
+    socket.data.team = null / 1 / 2 
+    socekt.data.name = nome do jogador
 }
-

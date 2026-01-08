@@ -10,9 +10,9 @@ export class Game {
 
         this.players = new Map(); // ID => Player
         this.playersWithoutTeam = new Map(); // playerName => Player
-        if(numMaxPlayers == 2){
+        if (numMaxPlayers == 2) {
             this.players.set(1, player);
-        }else{
+        } else {
             this.playersWithoutTeam.set(player.name, player);
         }
         this.numPlayers = 1;
@@ -32,20 +32,34 @@ export class Game {
 
         this.numPlayers++;
 
-        if(this.numMaxPlayers == 2){
+        if (this.numMaxPlayers == 2) {
             this.players.set(this.numPlayers, player);
 
             player.setID(this.numPlayers);
             player.setTeam();
 
-        }else{
+        } else {
             this.playersWithoutTeam.set(player.name, player);
         }
     }
 
-    removePlayer(playerID) {
-        this.players.delete(playerID);
-        this.numPlayers--;
+    removePlayer(playerName, playerID) {
+        if (this.playersWithoutTeam.has(playerName)) {
+            this.playersWithoutTeam.delete(playerName);
+            this.numPlayers--;
+
+        } else if (this.players.has(playerID)) {
+            exit.players.delete(playerID);
+            this.numPlayers--;
+        } else {
+            console.log(`Player ${playerName}, ${playerName} não encontrado`);
+            return {
+                success: false,
+                message: "Player não encontrado"
+            };
+        }
+        console.log(`player: ${playerName} removido`);
+        return true;
     }
 
     getPlayer(socketID) {
@@ -56,9 +70,11 @@ export class Game {
         }
     }
 
-    joinTeam(player, ID) {
-        if(this.player.has(ID)) throw new Error("Posição já ocupada");
-        if(!this.playersWithoutTeam.has(player.name)) throw new Error ("Usuario já tem um time");
+    joinTeam(playerName, ID) {
+        if (!this.playersWithoutTeam.has(playerName)) throw new Error("Usuario já tem um time");
+
+        let player = this.playersWithoutTeam.get(playerName);
+        if (this.players.has(ID)) throw new Error("Posição já ocupada");
 
         this.players.set(ID, this.playersWithoutTeam.get(player.name));
         this.playersWithoutTeam.delete(playerName);
@@ -68,7 +84,7 @@ export class Game {
     }
 
     exitTeam(player) {
-        if(this.playersWithoutTeam.has(player.name)) throw new Error("Usuário sem time");
+        if (this.playersWithoutTeam.has(player.name)) throw new Error("Usuário sem time");
 
         this.playersWithoutTeam.set(player.name, player);
         this.players.delete(player.id);

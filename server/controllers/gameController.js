@@ -1,4 +1,34 @@
-import { forEachChild, isSourceFile, validateLocaleAndSetLanguage } from "typescript";
+async function updateHands(room, game, io) {
+    const sockets = await io.in(room).fetchSockets();
+
+    sockets.forEach((socket) => {
+        const player = game.getPlayer(socket.id);
+
+
+        const playerCards = player.hand.map((card) => {
+            return card.image;
+        })
+
+        socket.emit("updateHands", playerCards);
+    });
+}
+
+export async function startRound(socket, io, rooms) {
+    try {
+        if (socket.data.host) {
+            const roomName = socket.data.roomName;
+            const game = rooms.get(roomName);
+
+            if (game) {
+                await game.startRound();
+
+                await updateHands(roomName, game, io);
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao iniciar rodada:", error);
+    }
+}
 
 export function gameController(io, rooms) {
     io.on("connection", (socket) => {
@@ -13,7 +43,7 @@ export function gameController(io, rooms) {
 
             if (!player) return socket.emit("playCard", false, "Player não encontrado!");
 
-            const response = game.playCard(player, card);
+            const response = game.playCard(player, player.hand[card]);
 
             if (!response.success) return socket.emit("playCard", false, response.message);
 
