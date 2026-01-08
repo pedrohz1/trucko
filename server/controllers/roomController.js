@@ -20,7 +20,7 @@ function getRooms(io, rooms) {
 
 function getTeamMembers(io, room){
     if(room.numMaxPlayers != 2){
-        io.to(room.name).emit("teamList", Array.from(room.playersWithoutTeam.values), room.players);
+        io.to(room.name).emit("teamList", room.numMaxPlayers, room.playersWithoutTeam, room.players);
     }
 }
 
@@ -35,11 +35,11 @@ export function roomController(io, rooms) {
 
         socket.on("createRoom", (roomName, playerName) => {
             if (rooms.has(roomName)) {
-                io.emit("createRoom", false, "Já existe uma sala com esse nome!");
+                socket.emit("createRoom", false, "Já existe uma sala com esse nome!");
                 return;
             };
 
-            rooms.set(roomName, new Game(roomName, new Player(playerName, socket.id, true), 4));
+            rooms.set(roomName, new Game(roomName, new Player(playerName, socket.id, true), 2));
             socket.data.roomName = roomName;
             socket.data.host = true;
             socket.data.name = playerName;
@@ -49,6 +49,7 @@ export function roomController(io, rooms) {
 
             console.log(rooms.get(roomName));
 
+            getTeamMembers(io, rooms.get(roomName));
             getRooms(io, rooms);
             socket.emit("createRoom", true);
         });
@@ -72,6 +73,7 @@ export function roomController(io, rooms) {
             socket.data.name = playerName;
             socket.data.id = null;
 
+            getTeamMembers(io, rooms.get(roomName));
             getRooms(io, rooms);
             socket.emit("joinRoom", true);
 
@@ -91,9 +93,10 @@ export function roomController(io, rooms) {
             const response = room.removePlayer(socket.data.name, socket.data.id);
 
             if ((room.players.size == 0 && room.playersWithoutTeam.size == 0) || socket.data.host) {
-                rooms.delete(roomName);
+                rooms.delete(socket.data.roomName);
             }
 
+            getTeamMembers(io, room);
             getRooms(io, rooms);
             socket.emit("exitRoom", response.success, response.message);
         });
@@ -118,6 +121,12 @@ export function roomController(io, rooms) {
             console.log(ID);
             try {
                 room.joinTeam(socket.data.name, ID);
+                socket.data.id = ID;
+                if(ID % 2){
+                    socket.data.team = 2;
+                }else{
+                    socket.data.team = 1;
+                }
 
             }catch(e) {
                 socket.emit("joinTeam", false, e.message);
@@ -128,7 +137,7 @@ export function roomController(io, rooms) {
             socket.emit("joinTeam", true, "");
         });
 
-        socket.on("exitTeam", () => {
+        socket.on("exitTeam", () => { //terminar dps
             const room = rooms.get(socket.data.roomName);
             if (!room) {
                 socket.emit("exitTeam", false, "Você não está em uma sala!");
@@ -152,8 +161,8 @@ export function roomController(io, rooms) {
                 socket.emit("startGame", false, "Partida não esta em estado de lobby");
                 return;
             }
-            if (room.players.size === room.numMaxPlayers) {
-                socket.emit("startGame", false, "Essa sala está cheia!");
+            if (room.players.size !== room.numMaxPlayers) {
+                socket.emit("startGame", false, "Essa sala não está cheia!");
                 return;
             }
 
@@ -172,11 +181,11 @@ export function roomController(io, rooms) {
             const response = room.removePlayer(socket.data.name, socket.data.id);
 
             if ((room.players.size == 0 && room.playersWithoutTeam.size == 0) || socket.data.host) {
-                rooms.delete(roomName);
+                rooms.delete(socket.data.roomName);
             }
 
+            getTeamMembers(io, rooms.get(roomName));
             getRooms(io, rooms);
-            socket.emit("exitRoom", false, `disconectado por ${reason}`);
         });
     });
 }

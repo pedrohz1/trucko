@@ -48,13 +48,26 @@ export function gameController(io, rooms) {
             if (!response.success) return socket.emit("playCard", false, response.message);
 
             if (response.data) {
-                if (response.data.winner) {
-                    io.to(room).emit("endGame", response.data.winner.winnerTeam);
+                if (response.data.roundWinner) {
+                    io.to(room).emit("endRound", response.data.roundWinner, response.data.score1, response.data.score2);
+                    return;
+                }
+                if (response.data.gameWinner) {
+                    io.to(room).emit("endGame", response.data.gameWinner);
                     io.socketsLeave(room);
                     return;
                 }
-                socket.emit("playCard", true, "", response.data.lastPlayedCard, response.data.biggestCard);
+                if (response.data.biggestCard) {
+                    io.to(room).emit("playCard", true, "", response.data.lastPlayedCard, response.data.biggestCard);
+                    return;
+                }
+
+                io.to(room).emit("playCard", true, "", response.data.lastPlayedCard);
             }
+        })
+
+        socket.on("startRound", () => {
+            startRound(socket, io, rooms);
         })
     })
 }

@@ -113,6 +113,7 @@ function carregarMain() {
     socket.emit("roomList");
 }
 
+//---RENDER FUNCTIONS---//
 socket.on("roomList", (rooms) => {
     const roomTable = document.querySelector("#roomsList tbody");
     let text = ``;
@@ -126,6 +127,22 @@ socket.on("roomList", (rooms) => {
     });
     roomTable.innerHTML = text;
 });
+
+socket.on("teamList", (numMaxPlayers, playersWithoutTeam, players) => {
+    const playersTable = document.querySelector("#listPlayers tbody");
+    let text = ``;
+    playersWithoutTeam.forEach(player => {
+        text += `<tr>${player}</tr>`
+    });
+
+    if(numMaxPlayers == 2){
+
+    }
+
+    playersTable.innerHTML = text;
+});
+
+
 
 function iniciarJogo() {
     socket.emit("startGame");

@@ -30,7 +30,17 @@
 
         <div class="lobby">
             <div style="display: flex; flex-direction: column;">
-                <div style="display: flex; flex-direction: column;">
+                <table>
+                    <thead id="playersList" style="background-color: black; color: white;">
+                        <tr>
+                            <th>Jogadores</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                
+
+                <div id="teamsButtons" style="display: flex; flex-direction: column;">
                     <input type="button" value="Entrar time 1" onclick="entrarTime(1)">
                     <input type="button" value="Entrar time 2" onclick="entrarTime(2)">
                     <input type="button" value="Entrar time 1" onclick="entrarTime(3)">
@@ -46,9 +56,15 @@
 
 
         <div class="game">
+            <div id="score" style="color: white">Time 1: 0 | Time 2: 0</div>
+
+            <img src="" class="card" onclick="playCard(0)">
             <img src="" class="card" onclick="playCard(1)">
             <img src="" class="card" onclick="playCard(2)">
-            <img src="" class="card" onclick="playCard(3)">
+            <br><br>
+            <img src="" id="last-card">
+            <img src="" id="biggest-card">
+            
         </div>
 
     </body>

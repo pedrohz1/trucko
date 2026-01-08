@@ -9,23 +9,34 @@ function challenge() {
 }
 
 socket.on("updateHands", (playerCards) => {
-    console.log("ricardo viado")
-    for(let i = 0; i < cards.length; i++) {
+    for (let i = 0; i < cards.length; i++) {
         cards[i].src = playerCards[i];
     }
 })
 
 socket.on("playCard", (sucess, message, lastPlayedCard, biggestCard) => {
-    if(!sucess) {
+    if (!sucess) {
         alert(message);
     }
-    
+
     if (sucess) {
         const lpCardImg = document.getElementById("last-card");
-        const bgCardImg = document.getElementById("biggest-card");
         lpCardImg.src = lastPlayedCard.image;
-        bgCardImg.src = biggestCard.image;
+        if (biggestCard) {
+            const bgCardImg = document.getElementById("biggest-card");
+            bgCardImg.src = biggestCard.image;
+        }
+
     }
+})
+
+socket.on("endRound", (winner, score1, score2) => {
+    alert(`O time ${winner} venceu a rodada!`);
+
+    const score = document.getElementById("score");
+    score.innerText = `Time 1: ${score1} | Time 2: ${score2}`;
+
+    socket.emit("startRound");
 })
 
 

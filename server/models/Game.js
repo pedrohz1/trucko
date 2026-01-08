@@ -111,10 +111,10 @@ export class Game {
         this.round = new Round(this.dealerIndex);
         await this.round.deck.startDeck();
 
-        await Promise.all(Array.from(this.players.values()).map(async (player) => {
+        for (const player of this.players.values()) {
             const cards = await this.round.deck.drawHand(3);
             player.setHand(cards);
-        }));
+        }
     }
 
     playCard(player, card) {
@@ -122,8 +122,17 @@ export class Game {
             const result = this.round.cardPlayed(player, card, this.numMaxPlayers);
             if (result.end) {
                 this.addPoints(result.winnerTeam);
-                if (this.state !== STATES.GAME_OVER) this.startRound();
-                return GameResponse.success(this.state, { winner: result.winnerTeam });
+                if (this.state !== STATES.GAME_OVER) {
+                    this.startRound();
+                    return GameResponse.success(this.state, { roundWinner: result.winnerTeam, score1: this.scoreTeam1, score2: this.scoreTeam2 });
+                }
+                if (this.state === STATES.GAME_OVER) {
+                    return GameResponse.success(this.state, { gameWinner: result.winnerTeam });
+                }
+            }
+
+            if (this.round.biggestCard === null) {
+                return GameResponse.success(this.state, { lastPlayedCard: card });
             }
 
             return GameResponse.success(this.state, { lastPlayedCard: card, biggestCard: this.round.biggestCard.card });
@@ -163,7 +172,7 @@ export class Game {
                 const winnerTeam = player.team === 1 ? 2 : 1;
                 this.addPoints(winnerTeam);
                 if (this.state !== STATES.GAME_OVER) this.startRound();
-                return GameResponse.success(this.state, { winner: winnerTeam });
+                return GameResponse.success(this.state, { roundWinner: winnerTeam });
             }
         }
 
