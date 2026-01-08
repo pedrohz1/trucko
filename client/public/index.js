@@ -1,28 +1,30 @@
 const socket = io();
 
+const homeScreen = document.getElementsByClassName("home");
+const lobbyScreen = document.getElementsByClassName("lobby");
+const gameScreen = document.getElementsByClassName("game");
+
 socket.emit("roomsList");
 
-function criarSala(){
-    
+function criarSala() {
+
     const roomName = document.getElementById("roomName").value;
     const playerName = document.getElementById("playerName").value;
-    
-    if(!roomName){
+
+    if (!roomName) {
         alert("Digite o nome da sala para continuar");
         return;
     }
-    if(!playerName){
+    if (!playerName) {
         alert("Digite o nome do jogador para continuar");
         return;
     }
-    
-    window.location.href = 'lobby';
 
     socket.emit("createRoom", roomName, playerName);
 
-    socket.on("createRoom", (success) => {
-        if(!success){
-            alert("Nome da sala já existente");
+    socket.on("createRoom", (success, message) => {
+        if (!success) {
+            alert(message);
             return;
         }
         alert("Sala criada com sucesso, esperando players...");
@@ -31,15 +33,14 @@ function criarSala(){
     socket.emit("roomsList");
 }
 
-function entrarSala(){
-    const roomName = document.getElementById("roomName").value;
+function entrarSala(roomName) {
     const playerName = document.getElementById("playerName").value;
 
-    if(!roomName){
+    if (!roomName) {
         alert("Digite o nome da sala para continuar");
         return;
     }
-    if(!playerName){
+    if (!playerName) {
         alert("Digite o nome do jogador para continuar");
         return;
     }
@@ -47,26 +48,22 @@ function entrarSala(){
     socket.emit("joinRoom", roomName, playerName);
     console.log("isso");
 
-    socket.on("joinRoom", (success) => {
-        if(!success){
-            alert("Sala não encontrada");
+    socket.on("joinRoom", (success, message) => {
+        if (!success) {
+            alert(message);
             return;
         }
         alert("Esperando criador da sala iniciar o jogo");
     });
 }
 
-function carregarLobby(){
-
-}
-
 function sairSala() {
-    window.location.href = '';
+    socket.emit("exitRoom");
 }
 
 
 
-function carregarMain(){
+function carregarMain() {
     socket.emit("roomList");
 }
 
@@ -78,11 +75,12 @@ socket.on("roomList", (rooms) => {
         text += `<tr>
                     <th>${room.roomName}</th>
                     <th>${room.numPlayers}/${room.numMaxPlayers}</th>
+                    <th><input type="button" value="Entrar Sala" onclick="entrarSala(${room.roomName})"></th>
                 </tr>`;
     });
     roomTable.innerHTML = text;
 });
 
-function iniciarJogo(){
+function iniciarJogo() {
     socket.emit("startGame");
 }

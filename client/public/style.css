@@ -6,3 +6,11 @@ body {
     align-items: center;
     justify-content: center;
 }
+
+.lobby {
+    display: none;
+}
+
+.game {
+    display: none;
+}

@@ -1,32 +1,57 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <%- include('partials/header') %>
-<link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style.css">
 
     <body onload="carregarMain()">
-        <div style="display: flex; flex-direction: column;">
+        <div class="home">
             <div style="display: flex; flex-direction: column;">
-                <input type="text" name="playerName" id="playerName" placeholder="Digite o nome do Jogador">
-                <input type="text" name="roomName" id="roomName" placeholder="Digite o nome da sala">
+                <div style="display: flex; flex-direction: column;">
+                    <input type="text" name="playerName" id="playerName" placeholder="Digite o nome do Jogador">
+                    <input type="text" name="roomName" id="roomName" placeholder="Digite o nome da sala">
+                </div>
+                <div>
+                    <input type="button" value="CriarSala" onclick="criarSala()">
+                </div>
             </div>
-            <div>
-                <input type="button" value="CriarSala" onclick="criarSala()">
-                <input type="button" value="Entrar Sala" onclick="entrarSala()">
-                <input type="button" value="Começar Partida" onclick="iniciarJogo()">
+
+            <table id="roomsList">
+                <thead style="background-color: black; color: white;">
+                    <tr>
+                        <th>Nome da sala</th>
+                        <th>jogadores</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        
+
+
+        <div class="lobby">
+            <div style="display: flex; flex-direction: column;">
+                <div style="display: flex; flex-direction: column;">
+                </div>
+                <div>
+                    <input type="button" value="Entrar time 1" onclick="entrarTime(1)">
+                    <input type="button" value="Entrar time 2" onclick="entrarTime(2)">
+                    <input type="button" value="Entrar time 1" onclick="entrarTime(3)">
+                    <input type="button" value="Entrar time 2" onclick="entrarTime(4)">
+                    <input type="button" value="Começar partida" onclick="iniciarJogo()">
+                    <input type="button" value="Sair da sala" onclick="sairSala()">
+                </div>
             </div>
         </div>
 
-        <table id="roomsList">
-            <thead style="background-color: black; color: white;">
-                <tr>
-                    <th>Nome da sala</th>
-                    <th>jogadores</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
 
-        <script src="/socket.io/socket.io.js"></script>
-        <script src="/index.js"></script>
+
+        <div class="game">
+            <input type="button" value="Começar partida" onclick="jogarCarta()">
+        </div>
+
     </body>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/index.js"></script>
+    </body>
+
 </html>

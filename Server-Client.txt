@@ -5,15 +5,21 @@ Client -> Server {
     startGame (roomName)
 
     playCard (player, card)
+    challenge ()
 }
 
 Server -> Client{
-
+    playCard (sucess, message, lastPlayedCard, biggestCard)
+    endGame (winner)
 }
 
+rooms (roomName => game)
+
 socket.data{
-    socket.data.roomName = roomName;
-    socket.data.host = true;
-    socekt.data.team =
+    socket.data.roomName
+    socket.data.host
+    socket.data.id
+    socket.data.team
+    socekt.data.name
 }
 

@@ -8,7 +8,7 @@ export class Game {
         player.setID(1);
         player.setTeam();
 
-        this.players = new Map(); //ID => Player
+        this.players = new Map(); // ID => Player
         this.playersWithoutTeam = new Map(); // playerName => Player
         if(numMaxPlayers == 2){
             this.players.set(1, player);
@@ -27,7 +27,7 @@ export class Game {
     }
 
     addPlayer(player) {
-        if (this.numMaxPlayers == this.numPlayers) throw new Error("Capacidade máxima da sala atingida");
+        if (this.numMaxPlayers <= this.numPlayers) throw new Error("Capacidade máxima da sala atingida");
         if (this.players.has(player)) throw new Error("Usuário já existente na sala");
 
         this.numPlayers++;
