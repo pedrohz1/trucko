@@ -1,8 +1,8 @@
 const socket = io();
 
-const homeScreen = document.getElementsByClassName("home");
-const lobbyScreen = document.getElementsByClassName("lobby");
-const gameScreen = document.getElementsByClassName("game");
+const homeScreen = document.getElementsByClassName("home")[0];
+const lobbyScreen = document.getElementsByClassName("lobby")[0];
+const gameScreen = document.getElementsByClassName("game")[0];
 
 socket.emit("roomsList");
 
@@ -27,6 +27,8 @@ function criarSala() {
             alert(message);
             return;
         }
+        homeScreen.style.display = "none";
+        lobbyScreen.style.display = "block";
         alert("Sala criada com sucesso, esperando players...");
     });
 
@@ -46,7 +48,7 @@ function entrarSala(roomName) {
     }
 
     socket.emit("joinRoom", roomName, playerName);
-    console.log("isso");
+    console.log(roomName);
 
     socket.on("joinRoom", (success, message) => {
         if (!success) {

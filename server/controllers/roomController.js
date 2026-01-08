@@ -50,7 +50,7 @@ export function roomController(io, rooms) {
                 return;
             };
 
-            if (socket.data.roomName) {
+            if (socket.data.roomName == roomName) {
                 socket.emit("joinRoom", false, "Você já está em uma sala!");
                 return;
             }
