@@ -132,10 +132,10 @@ export class Game {
             }
 
             if (this.round.biggestCard === null) {
-                return GameResponse.success(this.state, { lastPlayedCard: card });
+                return GameResponse.success(this.state, { lastPlayedCard: this.round.lastPlayedCard });
             }
 
-            return GameResponse.success(this.state, { lastPlayedCard: card, biggestCard: this.round.biggestCard.card });
+            return GameResponse.success(this.state, { lastPlayedCard: this.round.lastPlayedCard, biggestCard: this.round.biggestCard.card });
         }
 
         return GameResponse.error(this.state, "Você não pode jogar agora!");

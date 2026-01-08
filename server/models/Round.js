@@ -10,6 +10,7 @@ export class Round {
         this.winners = [];
         this.biggestCard = null;
         this.tieValue = 0;
+        this.lastPlayedCard = null;
 
         this.roundValue = 1;
         this.lastChallenge = 0;
@@ -18,6 +19,7 @@ export class Round {
 
     cardPlayed(player, card, maxPlayers) {
         this.playedCount++;
+        this.lastPlayedCard = card;
         this.setBiggestCard(player, card);
 
         if (this.playedCount === maxPlayers) {
