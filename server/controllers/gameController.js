@@ -83,23 +83,26 @@ export function gameController(io, rooms) {
 
             sockets.forEach((socket) => {
                 console.log(socket.data.id);
-                if(socket.data.id === (player.id % game.numMaxPlayers) + 1) {
-                    socket.emit("challengeReceive");
+                if (socket.data.id === (player.id % game.numMaxPlayers) + 1) {
+                    socket.emit("challengeReceive", game.round.roundValue);
                 }
             });
         })
 
-        socket.on("challengeResponse", (option) => {
+        socket.on("challengeResponse", async (option) => {
             const room = socket.data.roomName;
             const game = rooms.get(room);
             const player = game.getPlayer(socket.id);
 
             const response = game.challengeResponse(player, option);
 
-            if(response.data.roundWinner) {
+            if (response.data.roundWinner) {
                 io.to(room).emit("endRound", response.data.roundWinner);
                 return;
             }
+
+            const nextPlayer = game.players.get(response.data.nextPlayer).name;
+            await updateGame(room, game, io, nextPlayer);
         })
     })
 }

@@ -1,3 +1,8 @@
+* {
+    font-family: "Exo 2", sans-serif;
+    font-optical-sizing: auto;
+}
+
 body {
     background-color: #212121;
     width: 100vw;
@@ -9,7 +14,7 @@ body {
     padding: 0;
 }
 
-input{
+input {
     background-color: #212121;
     border-color: #f1f1f1;
     color: #f1f1f1;
@@ -20,8 +25,16 @@ input{
 }
 
 .game {
+    width: 100vw;
+    height: 100vh;
+    background-color: green;
     display: none;
     color: white;
+}
+
+.card {
+    max-width: 200;
+    max-height: 200;
 }
 
 .cards-container {
@@ -29,11 +42,13 @@ input{
     flex-direction: row;
     align-items: center;
     justify-content: center;
-}   
+    margin: 10px;
+}
 
 .card-flex {
     display: flex;
     flex-direction: column;
+    margin: 10px;
 }
 
 .game-infos {
@@ -41,4 +56,5 @@ input{
     flex-direction: row;
     align-items: center;
     color: green;
+    margin: 10px;
 }

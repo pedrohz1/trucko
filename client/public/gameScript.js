@@ -60,9 +60,9 @@ socket.on("challenge", (success, message) => {
 socket.on("challengeReceive", (roundValue) => {
 
     document.getElementById("challenge-buttons").innerHTML = `
-        <input type="button" value="Aceitar" onclick=("challengeResponse("accept")")>
-        <input type="button" value="Aumentar" onclick=("challengeResponse("increase")")>
-        <input type="button" value="Correr" onclick=("challengeResponse("fold")")>
+    <input type="button" value="Aceitar" onclick="challengeResponse('accept')">
+    <input type="button" value="Aumentar" onclick="challengeResponse('increase')">
+    <input type="button" value="Correr" onclick="challengeResponse('fold')">
     `
 
     document.getElementById("round-value").innerText = `O round está valendo ${roundValue}`;
