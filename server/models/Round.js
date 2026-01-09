@@ -36,16 +36,16 @@ export class Round {
         if (this.teamsChallenged.includes(player.team)) {
             return {
                 success: false,
-                reason: "Seu time já trucou!"
+                message: "Seu time já trucou nessa rodada!",
             }
         }
 
-        this.increaseRoundValue();
         this.teamsChallenged.push(player.team);
         this.lastChallenge = player.team;
         return {
             success: true,
-            reason: null
+            message: null,
+            roundValue: this.roundValue
         }
     }
 
@@ -71,17 +71,9 @@ export class Round {
     setBiggestCard(player, card) {
         const cardPower = Deck.cardOrder[card.code];
 
-        if (this.playedCount === 0) {
+        if (this.playedCount === 1) {
             this.biggestCard = { player: player, card: card };
             this.tieValue = 0;
-            return;
-        }
-
-        if (this.biggestCard === null) {
-            if (cardPower > this.tieValue) {
-                this.biggestCard = { player: player, card: card };
-                this.tieValue = 0;
-            }
             return;
         }
 
@@ -96,12 +88,21 @@ export class Round {
         }
     }
 
+
     nextTurn(maxPlayers) {
         this.playedCount = 0;
         let nextPlayerId = 0;
 
         if (this.biggestCard === null) {
             this.winners.push(0);
+
+            if (this.winners.length === 3) {
+                return {
+                    end: true,
+                    winnerTeam: this.winners[0]
+                };
+            }
+
             nextPlayerId = (this.playing % maxPlayers) + 1;
         } else {
             const winnerTeam = this.biggestCard.player.team;
@@ -114,21 +115,24 @@ export class Round {
             }
 
             this.winners.push(winnerTeam);
-            nextPlayerId = this.biggestCard.player.id;
-        }
 
-        if (this.winners.length === 3 && this.winners.every(w => w === 0)) {
-            return {
-                end: true,
-                winnerTeam: 0
-            };
+            if (this.winners.length === 3) {
+                return {
+                    end: true,
+                    winnerTeam: winnerTeam
+                };
+            }
+
+            nextPlayerId = this.biggestCard.player.id;
         }
 
         this.playing = nextPlayerId;
         this.biggestCard = null;
+        this.tieValue = 0; // Reset crucial para 2 players
 
         return {
             end: false
         };
     }
+
 }

@@ -18,10 +18,10 @@ function getRooms(io, rooms) {
     io.emit("roomList", allRooms);
 }
 
-function getTeamMembers(io, room){
-    if(room.numMaxPlayers != 2){
-        io.to(room.name).emit("teamList", room.numMaxPlayers, room.playersWithoutTeam, room.players);
-    }
+function getTeamMembers(io, room) {
+    const arrayPlayersOut = Array.from(room.playersWithoutTeam.entries());
+    const arrayPlayers = Array.from(room.players.entries());
+    io.to(room.roomName).emit("teamList", room.roomName, room.numMaxPlayers, arrayPlayersOut, arrayPlayers);
 }
 
 //---Main function---//
@@ -33,17 +33,17 @@ export function roomController(io, rooms) {
             getRooms(io, rooms);
         })
 
-        socket.on("createRoom", (roomName, playerName) => {
+        socket.on("createRoom", (roomName, playerName, numMaxPlayers) => {
             if (rooms.has(roomName)) {
                 socket.emit("createRoom", false, "Já existe uma sala com esse nome!");
                 return;
             };
 
-            rooms.set(roomName, new Game(roomName, new Player(playerName, socket.id, true), 2));
+            rooms.set(roomName, new Game(roomName, new Player(playerName, socket.id, true), numMaxPlayers));
             socket.data.roomName = roomName;
             socket.data.host = true;
             socket.data.name = playerName;
-            socket.data.id = null;
+            socket.data.id = (numMaxPlayers == 2) ? 1 : null;
 
             socket.join(roomName);
 
@@ -67,11 +67,15 @@ export function roomController(io, rooms) {
             }
 
             socket.join(roomName);
-            rooms.get(roomName).addPlayer(new Player(playerName, socket.id, false));
+            try {
+                rooms.get(roomName).addPlayer(new Player(playerName, socket.id, false));
+            } catch (e) {
+                socket.emit("joinRoom", false, e.message);
+            }
             socket.data.roomName = roomName;
             socket.data.host = false;
             socket.data.name = playerName;
-            socket.data.id = null;
+            socket.data.id = (rooms.get(roomName).numMaxPlayers == 2) ? 2 : null;
 
             getTeamMembers(io, rooms.get(roomName));
             getRooms(io, rooms);
@@ -118,17 +122,16 @@ export function roomController(io, rooms) {
                 return;
             }
 
-            console.log(ID);
             try {
                 room.joinTeam(socket.data.name, ID);
                 socket.data.id = ID;
-                if(ID % 2){
+                if (ID % 2) {
                     socket.data.team = 2;
-                }else{
+                } else {
                     socket.data.team = 1;
                 }
 
-            }catch(e) {
+            } catch (e) {
                 socket.emit("joinTeam", false, e.message);
                 return;
             }
@@ -137,15 +140,20 @@ export function roomController(io, rooms) {
             socket.emit("joinTeam", true, "");
         });
 
-        socket.on("exitTeam", () => { //terminar dps
+        socket.on("exitTeam", () => {
             const room = rooms.get(socket.data.roomName);
             if (!room) {
                 socket.emit("exitTeam", false, "Você não está em uma sala!");
                 return;
             }
+            if (socket.data.id == null) {
+                socket.emit("exitTeam", false, "Você não está em time!");
+                return;
+            }
+            room.exitTeam(socket.data.id);
+            getTeamMembers(io, room);
+            socket.emit("exitTeam", true, "");
         });
-
-        //socket.on("changeTeam");
 
         socket.on("startGame", async () => {
             const room = rooms.get(socket.data.roomName);
@@ -166,7 +174,6 @@ export function roomController(io, rooms) {
                 return;
             }
 
-            //if(rooms.get(socket.data.rooms))
             io.to(socket.data.roomName).emit("startGame", true);
             await startRound(socket, io, rooms);
         });
@@ -184,7 +191,7 @@ export function roomController(io, rooms) {
                 rooms.delete(socket.data.roomName);
             }
 
-            getTeamMembers(io, rooms.get(roomName));
+            getTeamMembers(io, rooms.get(socket.data.roomName));
             getRooms(io, rooms);
         });
     });

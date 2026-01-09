@@ -33,6 +33,7 @@ function criarSala() {
 
     const roomName = document.getElementById("roomName").value;
     const playerName = document.getElementById("playerName").value;
+    const numPlayers = Number(document.getElementById("numPlayer").value);
 
     if (!roomName) {
         alert("Digite o nome da sala para continuar");
@@ -42,8 +43,9 @@ function criarSala() {
         alert("Digite o nome do jogador para continuar");
         return;
     }
-
-    socket.emit("createRoom", roomName, playerName);
+    socket.emit("roomsList");   
+    socket.emit("createRoom", roomName, playerName, numPlayers);
+}
 
     socket.on("createRoom", (success, message) => {
         if (!success) {
@@ -55,8 +57,6 @@ function criarSala() {
         alert("Sala criada com sucesso, esperando players...");
     });
 
-    socket.emit("roomsList");
-}
 
 function entrarSala(roomName) {
     const playerName = document.getElementById("playerName").value;
@@ -71,7 +71,7 @@ function entrarSala(roomName) {
     }
 
     socket.emit("joinRoom", roomName, playerName);
-    console.log(roomName);
+}
 
     socket.on("joinRoom", (success, message) => {
         if (!success) {
@@ -81,10 +81,10 @@ function entrarSala(roomName) {
 
         showScreen("lobby");
     });
-}
 
 function sairSala() {
     socket.emit("exitRoom");
+}
 
     socket.on("exitRoom", (success, message) => {
         if (!success) {
@@ -94,12 +94,12 @@ function sairSala() {
 
         showScreen("home");
     });
-}
 
 //---FUNC TIME---//
 
 function entrarTime(ID) {
     socket.emit("joinTeam", ID);
+}
 
     socket.on("joinTeam", (success, message) => {
         if (!success) {
@@ -107,11 +107,15 @@ function entrarTime(ID) {
             return;
         }
     });
+
+function sairTime() {
+    
 }
 
 function carregarMain() {
     socket.emit("roomList");
 }
+
 
 //---RENDER FUNCTIONS---//
 socket.on("roomList", (rooms) => {
@@ -119,33 +123,59 @@ socket.on("roomList", (rooms) => {
     let text = ``;
 
     rooms.forEach(room => {
-        text += `<tr>
+        if (room.numPlayers != room.numMaxPlayers){
+            text += `<tr>
                     <th>${room.roomName}</th>
                     <th>${room.numPlayers}/${room.numMaxPlayers}</th>
                     <th><input type="button" value="Entrar Sala" onclick="entrarSala('${room.roomName}')"></th>
-                </tr>`;
+                    </tr>`;
+        }
     });
     roomTable.innerHTML = text;
 });
 
-socket.on("teamList", (numMaxPlayers, playersWithoutTeam, players) => {
-    const playersTable = document.querySelector("#listPlayers tbody");
-    let text = ``;
-    playersWithoutTeam.forEach(player => {
-        text += `<tr>${player}</tr>`
-    });
+socket.on("teamList", (roomName, numMaxPlayers, BplayersWithoutTeam, Bplayers) => {
+    const playersTable = document.querySelector("#playersList tbody");
+    const teamButtons = document.querySelector("#teamsButtons");
+    document.getElementById("lobbyTitle").innerHTML = roomName;
 
-    if(numMaxPlayers == 2){
+    const players = new Map(Bplayers);
+    const playersWithoutTeam = new Map(BplayersWithoutTeam);
+    
+    let textTable = ``;
+    let textButtons = ``;
 
+    switch (Number(numMaxPlayers)) {
+        case 2:
+            players.forEach((player, id) => {
+                textTable += `<tr><td>${id}</td><td>${player.name}</td></tr>`;
+            });
+            break;
+        
+        case 4:
+            playersWithoutTeam.forEach((playerName, player) => {
+                textTable += `<tr><td>${player.name}</td></tr>`
+            });
+            textButtons += !players.has(1) ? `<input type="button" class="buttonTeam1" value="Entrar time 1" onclick="entrarTime(1)">` : `<div class="nameTeam1">${players.get(1).name}</div>`;
+            textButtons += !players.has(2) ? `<input type="button" class="buttonTeam2" value="Entrar time 2" onclick="entrarTime(2)">` : `<div class="nameTeam2">${players.get(2).name}</div>`;
+            textButtons += !players.has(3) ? `<input type="button" class="buttonTeam1" value="Entrar time 1" onclick="entrarTime(3)">` : `<div class="nameTeam1">${players.get(3).name}</div>`;
+            textButtons += !players.has(4) ? `<input type="button" class="buttonTeam2" value="Entrar time 2" onclick="entrarTime(4)">` : `<div class="nameTeam2">${players.get(4).name}</div>`;
+            textButtons += `<input type="button" value="Sair do time" onclick="sairTime()">`
+            break;
+
+        default:
+        break;
     }
 
-    playersTable.innerHTML = text;
+    playersTable.innerHTML = textTable;
+    teamButtons.innerHTML = textButtons;
 });
 
 
 
 function iniciarJogo() {
     socket.emit("startGame");
+}
 
     socket.on("startGame", (success, message) => {
         if (!success) {
@@ -153,7 +183,6 @@ function iniciarJogo() {
             return;
         }
     })
-};
 
 socket.on("startGame", (success) => {
     if (success) {

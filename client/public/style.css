@@ -5,6 +5,14 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+
+input{
+    background-color: #212121;
+    border-color: #f1f1f1;
+    color: #f1f1f1;
 }
 
 .lobby {
@@ -13,4 +21,24 @@ body {
 
 .game {
     display: none;
+    color: white;
+}
+
+.cards-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}   
+
+.card-flex {
+    display: flex;
+    flex-direction: column;
+}
+
+.game-infos {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    color: green;
 }

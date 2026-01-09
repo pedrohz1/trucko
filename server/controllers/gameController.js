@@ -1,4 +1,4 @@
-async function updateHands(room, game, io) {
+async function updateGame(room, game, io, nextPlayer) {
     const sockets = await io.in(room).fetchSockets();
 
     sockets.forEach((socket) => {
@@ -9,7 +9,7 @@ async function updateHands(room, game, io) {
             return card.image;
         })
 
-        socket.emit("updateHands", playerCards);
+        socket.emit("updateGame", playerCards, nextPlayer);
     });
 }
 
@@ -22,18 +22,18 @@ export async function startRound(socket, io, rooms) {
             if (game) {
                 await game.startRound();
 
-                await updateHands(roomName, game, io);
+                await updateGame(roomName, game, io);
             }
         }
     } catch (error) {
-        console.error("Erro ao iniciar rodada:", error);
+        socket.emit("startRound", false, error);
     }
 }
 
 export function gameController(io, rooms) {
     io.on("connection", (socket) => {
 
-        socket.on("playCard", (card) => {
+        socket.on("playCard", async (card) => {
             const room = socket.data.roomName;
             const game = rooms.get(room);
 
@@ -57,17 +57,49 @@ export function gameController(io, rooms) {
                     io.socketsLeave(room);
                     return;
                 }
-                if (response.data.biggestCard) {
-                    io.to(room).emit("playCard", true, "", response.data.lastPlayedCard, response.data.biggestCard);
-                    return;
-                }
 
-                io.to(room).emit("playCard", true, "", response.data.lastPlayedCard);
+                io.to(room).emit("playCard", true, "", response.data.lastPlayedCard, response.data.biggestCard);
+
+                const nextPlayer = game.players.get(response.data.nextPlayer).name;
+                await updateGame(room, game, io, nextPlayer);
             }
         })
 
-        socket.on("startRound", () => {
-            startRound(socket, io, rooms);
+        socket.on("startRound", async () => {
+            await startRound(socket, io, rooms);
+        })
+
+
+        socket.on("challenge", async () => {
+            const room = socket.data.roomName;
+            const game = rooms.get(room);
+            const player = game.getPlayer(socket.id);
+
+            const response = game.challenge(player);
+
+            if (!response.success) return socket.emit("challenge", false, response.message);
+
+            const sockets = await io.in(room).fetchSockets();
+
+            sockets.forEach((socket) => {
+                console.log(socket.data.id);
+                if(socket.data.id === (player.id % game.numMaxPlayers) + 1) {
+                    socket.emit("challengeReceive");
+                }
+            });
+        })
+
+        socket.on("challengeResponse", (option) => {
+            const room = socket.data.roomName;
+            const game = rooms.get(room);
+            const player = game.getPlayer(socket.id);
+
+            const response = game.challengeResponse(player, option);
+
+            if(response.data.roundWinner) {
+                io.to(room).emit("endRound", response.data.roundWinner);
+                return;
+            }
         })
     })
 }

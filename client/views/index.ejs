@@ -6,9 +6,15 @@
     <body onload="carregarMain()">
         <div class="home">
             <div style="display: flex; flex-direction: column;">
+                <div class="header" id="homeHeader">Truco Online</div>
+                
                 <div style="display: flex; flex-direction: column;">
                     <input type="text" name="playerName" id="playerName" placeholder="Digite o nome do Jogador">
                     <input type="text" name="roomName" id="roomName" placeholder="Digite o nome da sala">
+                    <select name="numPlayer" id="numPlayer">
+                        <option value="2">2 jogadores</option>
+                        <option value="4">4 jogadores</option>
+                    </select>
                 </div>
                 <div>
                     <input type="button" value="CriarSala" onclick="criarSala()">
@@ -25,27 +31,25 @@
                 <tbody></tbody>
             </table>
         </div>
-        
+
 
 
         <div class="lobby">
+            <div id="lobbyTitle" style="font-size: 50px;"></div>
             <div style="display: flex; flex-direction: column;">
-                <table>
-                    <thead id="playersList" style="background-color: black; color: white;">
+
+                <table id="playersList">
+                    <thead style="background-color: black; color: white;">
                         <tr>
                             <th>Jogadores</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
                 </table>
-                
 
                 <div id="teamsButtons" style="display: flex; flex-direction: column;">
-                    <input type="button" value="Entrar time 1" onclick="entrarTime(1)">
-                    <input type="button" value="Entrar time 2" onclick="entrarTime(2)">
-                    <input type="button" value="Entrar time 1" onclick="entrarTime(3)">
-                    <input type="button" value="Entrar time 2" onclick="entrarTime(4)">
                 </div>
+
                 <div>
                     <input type="button" value="Começar partida" onclick="iniciarJogo()">
                     <input type="button" value="Sair da sala" onclick="sairSala()">
@@ -56,21 +60,39 @@
 
 
         <div class="game">
-            <div id="score" style="color: white">Time 1: 0 | Time 2: 0</div>
+            <div id="score" class="game-infos">Time 1: 0 | Time 2: 0</div>
+            <div id="next-player" class="game-infos"></div>
+            <div id="round-value" class="game-infos">O round está valendo 1</div>
 
-            <img src="" class="card" onclick="playCard(0)">
-            <img src="" class="card" onclick="playCard(1)">
-            <img src="" class="card" onclick="playCard(2)">
+            <div class="cards-container">
+                <img src="" class="card" onclick="playCard(0)">
+                <img src="" class="card" onclick="playCard(1)">
+                <img src="" class="card" onclick="playCard(2)">
+            </div>
+
             <br><br>
-            <img src="" id="last-card">
-            <img src="" id="biggest-card">
-            
+
+            <div class="cards-container">
+                <div class="card-flex">
+                    <span>Ultima carta jogada:</span>
+                    <img src="" id="last-card">
+                </div>
+                <div class="card-flex">
+                    <span>Maior carta jogada:</span>
+                    <img src="" id="biggest-card">
+                </div>
+            </div>
+
+            <div id="challenge-buttons">
+                <input type="button" value="TRUCO!" onclick="challenge()">
+            </div>
+
         </div>
 
     </body>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/index.js"></script>
     <script src="/gameScript.js"></script>
-</body>
+    </body>
 
 </html>

@@ -1,5 +1,5 @@
-export class Player { 
-    
+export class Player {
+
     constructor(name, socketID, host) {
         this.name = name;
         this.hand = [];
@@ -9,17 +9,17 @@ export class Player {
         this.host = host;
     }
 
-    
+
     setID(id) {
         this.id = id;
     }
-    
+
     setTeam() {
-        if(this.id == null) {
+        if (this.id == null) {
             this.team = null;
             return;
         }
-        if(this.id % 2 != 0) {
+        if (this.id % 2 != 0) {
             this.team = 1;
             return;
         }
@@ -29,6 +29,11 @@ export class Player {
 
     setHand(cards) {
         this.hand = cards;
+    }
+
+    removeCard(removedCard) {
+        console.log(removedCard)
+        this.hand = this.hand.filter(card => card.code !== removedCard.code);
     }
 
 }

@@ -52,13 +52,11 @@ export class Game {
             exit.players.delete(playerID);
             this.numPlayers--;
         } else {
-            console.log(`Player ${playerName}, ${playerName} não encontrado`);
             return {
                 success: false,
                 message: "Player não encontrado"
             };
         }
-        console.log(`player: ${playerName} removido`);
         return true;
     }
 
@@ -104,6 +102,17 @@ export class Game {
 
         this.players.set(newID, player1);
         this.players.set(currentID, player2);
+
+        if(player1 != undefined){
+            player1.setID(newID);
+            player1.setTeam();
+        }
+        if(player2 != undefined){
+            player2.setID(currentID);
+            player2.setTeam();
+        }
+        
+        
     }
 
     async startRound() {
@@ -119,12 +128,15 @@ export class Game {
 
     playCard(player, card) {
         if (this.state === STATES.PLAYING && this.round.playing === player.id) {
+
+            player.removeCard(card);
+
             const result = this.round.cardPlayed(player, card, this.numMaxPlayers);
             if (result.end) {
                 this.addPoints(result.winnerTeam);
                 if (this.state !== STATES.GAME_OVER) {
                     this.startRound();
-                    return GameResponse.success(this.state, { roundWinner: result.winnerTeam, score1: this.scoreTeam1, score2: this.scoreTeam2 });
+                    return GameResponse.success(this.state, { roundWinner: result.winnerTeam, score1: this.scoreTeam1, score2: this.scoreTeam2, nextPlayer: this.round.playing });
                 }
                 if (this.state === STATES.GAME_OVER) {
                     return GameResponse.success(this.state, { gameWinner: result.winnerTeam });
@@ -132,43 +144,45 @@ export class Game {
             }
 
             if (this.round.biggestCard === null) {
-                return GameResponse.success(this.state, { lastPlayedCard: this.round.lastPlayedCard });
+                return GameResponse.success(this.state, { lastPlayedCard: this.round.lastPlayedCard, biggestCard: this.round.biggestCard, nextPlayer: this.round.playing });
             }
 
-            return GameResponse.success(this.state, { lastPlayedCard: this.round.lastPlayedCard, biggestCard: this.round.biggestCard.card });
+            return GameResponse.success(this.state, { lastPlayedCard: this.round.lastPlayedCard, biggestCard: this.round.biggestCard.card, nextPlayer: this.round.playing });
         }
 
         return GameResponse.error(this.state, "Você não pode jogar agora!");
     }
+
 
     challenge(player) {
         if (this.state === STATES.PLAYING && this.round.playing === player.id) {
             const result = this.round.challenge(player);
             if (result.success) {
                 this.state = STATES.WAITING_FOR_TRUCO;
-                return GameResponse.success(this.state);
+                return GameResponse.success(this.state, result.roundValue);
             }
-            return GameResponse.error(this.state, result.reason);
+            return GameResponse.error(this.state, result.message);
         }
 
         return GameResponse.error(this.state, "Você não pode trucar agora!");
     }
 
-    challengeResponse(player, response) {
+    challengeResponse(player, option) {
         if (this.state === STATES.WAITING_FOR_TRUCO && this.round.lastChallenge !== player.team) {
 
-            if (response === RESPONSES.INCREASE) {
+            if (option === RESPONSES.INCREASE) {
                 this.round.lastChallenge = player.team;
                 this.round.increaseRoundValue();
                 return GameResponse.success(this.state);
             }
 
-            if (response === RESPONSES.ACCEPT) {
+            if (option === RESPONSES.ACCEPT) {
+                this.round.increaseRoundValue();
                 this.state = STATES.PLAYING;
                 return GameResponse.success(this.state);
             }
 
-            if (response === RESPONSES.FOLD) {
+            if (option === RESPONSES.FOLD) {
                 const winnerTeam = player.team === 1 ? 2 : 1;
                 this.addPoints(winnerTeam);
                 if (this.state !== STATES.GAME_OVER) this.startRound();
